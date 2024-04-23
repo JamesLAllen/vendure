@@ -2,6 +2,7 @@ import { PutObjectRequest, S3ClientConfig } from '@aws-sdk/client-s3';
 import { AwsCredentialIdentity, AwsCredentialIdentityProvider } from '@aws-sdk/types';
 import { AssetStorageStrategy, Logger } from '@vendure/core';
 import { Request } from 'express';
+import mime from 'mime-types';
 import * as path from 'node:path';
 import { Readable } from 'node:stream';
 
@@ -242,7 +243,7 @@ export class S3AssetStorageStrategy implements AssetStorageStrategy {
 
     private async writeFile(fileName: string, data: PutObjectRequest['Body'] | string | Uint8Array | Buffer) {
         const { Upload } = this.libStorage;
-
+        const mimeType = mime.lookup(fileName) || 'application/octet-stream';
         const upload = new Upload({
             client: this.s3Client,
             params: {
@@ -250,6 +251,7 @@ export class S3AssetStorageStrategy implements AssetStorageStrategy {
                 Bucket: this.s3Config.bucket,
                 Key: fileName,
                 Body: data,
+                ContentType: mimeType,
             },
         });
 
